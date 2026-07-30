@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Radar Météo Direct | France</title>
+  <meta name="description" content="Visualisation en temps réel des précipitations et de la pluie sur la France avec données radar Météo-France.">
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- MapLibre GL JS CSS -->
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Fullscreen Map Canvas -->
+  <div id="map"></div>
+
+  <!-- Header Glass Panel -->
+  <header class="glass-panel header-panel">
+    <div class="header-title-container">
+      <div class="radar-ping-icon">
+        <span class="pulse-ring"></span>
+        <span class="center-dot"></span>
+      </div>
+      <div>
+        <h1 class="app-title">Radar Météo</h1>
+        <p class="app-subtitle">Mosaïque Nationale Météo-France (500m)</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-badge" id="liveStatusBadge">
+        <span class="status-dot"></span>
+        <span id="statusText">EN DIRECT</span>
+      </div>
+      <button class="glass-btn icon-btn" id="themeToggleBtn" title="Changer le thème de la carte">
+        <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+      <button class="glass-btn icon-btn" id="locateBtn" title="Ma position">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Legend Glass Panel -->
+  <aside class="glass-panel legend-panel" id="legendPanel">
+    <div class="legend-header" id="legendHeader">
+      <span class="legend-title">Intensité</span>
+      <button class="glass-btn mini-btn" id="legendToggleBtn" title="Réduire/Développer">
+        <svg id="legendArrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Mode Développé (Vertical) -->
+    <div class="legend-body" id="legendBody">
+      <div class="legend-item">
+        <span class="color-badge" style="background: #E61E1E;"></span>
+        <span class="legend-label">Extrême</span>
+        <span class="legend-val">&gt;40mm</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-badge" style="background: #FF7800;"></span>
+        <span class="legend-label">Très forte</span>
+        <span class="legend-val">25 to 40mm</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-badge" style="background: #FFBF00;"></span>
+        <span class="legend-label">Forte</span>
+        <span class="legend-val">15 to 25mm</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-badge" style="background: #FFEB00;"></span>
+        <span class="legend-label">Abondante</span>
+        <span class="legend-val">8 to 15mm</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-badge" style="background: #28B44B;"></span>
+        <span class="legend-label">Modérée</span>
+        <span class="legend-val">4 to 8mm</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-badge" style="background: #3282F0;"></span>
+        <span class="legend-label">Faible</span>
+        <span class="legend-val">1 to 4mm</span>
+      </div>
+      <div class="legend-item">
+        <span class="color-badge" style="background: #B4DCFF;"></span>
+        <span class="legend-label">Bruine</span>
+        <span class="legend-val">&lt;1mm</span>
+      </div>
+    </div>
+
+    <!-- Mode Replié (Horizontal comme dans l'app Android) -->
+    <div class="legend-compact-swatches" id="legendCompactSwatches">
+      <span class="color-badge-mini" style="background: #B4DCFF;"></span>
+      <span class="color-badge-mini" style="background: #3282F0;"></span>
+      <span class="color-badge-mini" style="background: #28B44B;"></span>
+      <span class="color-badge-mini" style="background: #FFEB00;"></span>
+      <span class="color-badge-mini" style="background: #FFBF00;"></span>
+      <span class="color-badge-mini" style="background: #FF7800;"></span>
+      <span class="color-badge-mini" style="background: #E61E1E;"></span>
+    </div>
+  </aside>
+
+  <!-- Player Control Glass Panel -->
+  <main class="glass-panel player-panel">
+    <div class="player-info-row">
+      <div class="time-display">
+        <span class="time-clock" id="timeClock">--:--</span>
+        <span class="time-relative" id="timeRelative">Chargement...</span>
+      </div>
+      <div class="speed-selector">
+        <button class="speed-btn active" data-speed="1">1x</button>
+        <button class="speed-btn" data-speed="1.5">1.5x</button>
+        <button class="speed-btn" data-speed="2">2x</button>
+      </div>
+    </div>
+
+    <!-- Timeline Slider -->
+    <div class="slider-container">
+      <input type="range" id="timelineSlider" min="0" max="0" value="0" step="1" aria-label="Ligne du temps radar">
+      <div class="slider-ticks" id="sliderTicks"></div>
+    </div>
+
+    <!-- Playback Controls -->
+    <div class="controls-row">
+      <button class="glass-btn icon-btn" id="prevBtn" title="Image précédente">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></svg>
+      </button>
+
+      <button class="glass-btn play-btn" id="playBtn" title="Lecture / Pause">
+        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        <svg id="pauseIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+
+      <button class="glass-btn icon-btn" id="nextBtn" title="Image suivante">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></svg>
+      </button>
+
+      <div class="spacer"></div>
+
+      <button class="glass-btn icon-btn" id="refreshBtn" title="Actualiser les données">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- Loading Glass Overlay -->
+  <div class="glass-overlay" id="loadingOverlay">
+    <div class="glass-card loading-card">
+      <div class="spinner"></div>
+      <h2>Initialisation du Radar</h2>
+      <p id="loadingStatusText">Chargement des données satellites & radar...</p>
+    </div>
+  </div>
+
+  <!-- MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
