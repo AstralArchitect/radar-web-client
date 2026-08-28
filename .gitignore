@@ -1,0 +1,8 @@
+# Cloudflare local variables and build cache
+.dev.vars
+.dev.vars.*
+.wrangler
+node_modules
+.env
+.env.*
+

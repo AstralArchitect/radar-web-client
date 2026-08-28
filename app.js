@@ -25,13 +25,13 @@
     sources: {
       'carto-dark': {
         type: 'raster',
-        tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],
+        tiles: ['/api/tiles/dark_all/{z}/{x}/{y}@2x.png'],
         tileSize: 256,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>'
       },
       'carto-light': {
         type: 'raster',
-        tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'],
+        tiles: ['/api/tiles/light_all/{z}/{x}/{y}@2x.png'],
         tileSize: 256,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>'
       }
