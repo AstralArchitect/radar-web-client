@@ -25,7 +25,9 @@ export async function onRequest(context) {
   
   // Injection de la clé d'API secrète depuis les variables d'environnement Cloudflare
   if (env.CARTO_API_KEY) {
-    targetUrl.searchParams.set('key', env.CARTO_API_KEY);
+    const cleanKey = env.CARTO_API_KEY.trim();
+    targetUrl.searchParams.set('key', cleanKey);
+    targetUrl.searchParams.set('api_key', cleanKey);
   }
 
   try {
@@ -42,7 +44,11 @@ export async function onRequest(context) {
 
     // Configuration des en-têtes de cache pour le navigateur client
     const responseHeaders = new Headers(response.headers);
-    responseHeaders.set('Cache-Control', 'public, max-age=86400, s-maxage=604800');
+    if (env.CARTO_API_KEY && response.ok) {
+      responseHeaders.set('Cache-Control', 'public, max-age=86400, s-maxage=604800');
+    } else {
+      responseHeaders.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    }
     responseHeaders.set('Access-Control-Allow-Origin', '*');
 
     return new Response(response.body, {
