@@ -25,7 +25,7 @@ export async function onRequest(context) {
   
   // Injection de la clé d'API secrète depuis les variables d'environnement Cloudflare
   if (env.CARTO_API_KEY) {
-    targetUrl.searchParams.set('api_key', env.CARTO_API_KEY);
+    targetUrl.searchParams.set('key', env.CARTO_API_KEY);
   }
 
   try {
