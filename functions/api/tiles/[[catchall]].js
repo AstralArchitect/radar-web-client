@@ -27,7 +27,6 @@ export async function onRequest(context) {
   if (env.CARTO_API_KEY) {
     const cleanKey = env.CARTO_API_KEY.trim();
     targetUrl.searchParams.set('key', cleanKey);
-    targetUrl.searchParams.set('api_key', cleanKey);
   }
 
   try {
